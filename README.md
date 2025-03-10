@@ -1,10 +1,13 @@
 # Taller 6 | AREP
 
-## Creation of a CRUD System to Manage Properties
+## Secure Application Design
 
-In this project, we will develop a simple CRUD (Create, Read, Update, Delete) system for managing real estate properties through a web application. Users will be able to perform key operations on property listings, and the application will be deployed in the cloud using AWS EC2 instances.
+In this project, we will design and deploy a secure web application using AWS infrastructure. The system consists of two main components:
 
-The backend is built with Spring Boot and runs inside a Docker container on one EC2 instance, while the MySQL database is hosted in another Docker container on a separate EC2 instance. This architecture ensures scalability, maintainability, and separation of concerns, providing a flexible and efficient deployment strategy.
+- Apache Server (Frontend): Serves an asynchronous HTML+JavaScript client over a secure TLS connection, ensuring encrypted communication.
+- Spring Boot Server (Backend): Provides RESTful API endpoints, also secured with TLS, to handle client requests and authentication.
+
+The entire application is deployed on AWS, with each service running on separate EC2 instances. TLS certificates from Let’s Encrypt are used to encrypt all data transmissions. The login system is implemented with hashed password storage, ensuring user data security. This architecture prioritizes scalability, security, and best practices for cloud deployment.
 
 ## Architecture
 
