@@ -36,13 +36,11 @@ src/
               PropertyRepository.java
             service/
               PropertyService.java
-            WebApplication.java                 # Clase principal
+            SecureWeb.java                      # Clase principal
     resources/
         images/                                 # Recursos para el archivo Readme
-        static/            
-            index.html
-            styles.css
-            script.js
+        keystore/            
+            keystore.p12
         application.properties
   test/
     java/
@@ -50,7 +48,6 @@ src/
         edu/
           eci/
             PropertyControllerTest.java         # Pruebas Unitarias
-Dockerfile
 pom.xml
 README.md
 ```
@@ -141,56 +138,105 @@ git --version
     ```
     mvn clean package
     ```
-
-7. Create the Docker image of the application:
-
-    ```
-    docker build --tag taller6arep .
-    ```
-
-8. For local tests [localhost:8080](http://localhost:8080/), create a Docker container of the application or run it using an IDE:
-
-    ```
-    docker run -d -p 8080:8080 --name taller6 taller6arep
-    ```
-
-   ![](src/main/resources/images/local-homepage.png)
-
-9. Login and create the image on Dockerhub, the push the image:
-
-    ```
-    docker login
-    docker tag taller6arep jcontreras2025/taller6arep:latest
-    docker push jcontreras2025/taller6arep
-    ```
-
-   ![](src/main/resources/images/docker-hub.png)
-
-10. Create a new default EC2 instance on AWS and add a new Security Rule on the Security Group of the instance.:
+7. Create a new default EC2 instance on AWS and add a new Security Rule on the Security Group of the instance.:
 
     ![](src/main/resources/images/security-app.png)
 
-11. Connect to the EC2 instance, install docker with these commands:
+8. Load the .jar file generated into the EC2 with the command:
 
     ```
-    sudo yum update -y
-    sudo yum install docker
+    scp -i "SecondKey.pem" eci-0.0.1-SNAPSHOT.jar ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
     ```
 
-12. Start the Docker service and run the container with the application using this command:
+9. Connect to the EC2 instance using ssh:
 
     ```
-    sudo service docker start
-    sudo docker run -d -p 8080:8080 --name taller6 jcontreras2025/taller6arep
+    ssh -i "tu-llave.pem" ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com
     ```
 
-13. Copy the public DNS of the EC2 instance and paste it on a web browser using the port 42000, should look like this:
+10. Install java 17 and execute the .jar file using the following command:
 
     ```
-    http://ec2-44-204-74-94.compute-1.amazonaws.com:8080/
+    sudo yum intsall java-17
+    java -jar eci-0.0.1-SNAPSHOT.jar
     ```
 
-    ![](src/main/resources/images/homepage.png)
+    ![](src/main/resources/images/app-running.png)
+
+11. Create a last default EC2 instance on AWS and add a new Security Rule on the Security Group of the instance.
+
+   ![](src/main/resources/images/security-web.png)
+
+12. Get static domains using [Duck DNS](https://www.duckdns.org) for the EC2 applications, the one that will host Apache and the one that will host the Application, we need to use their public ip4 ips:
+
+    ![](src/main/resources/images/duckdns.png)
+
+13. Load the static files into the EC2 with the command:
+
+    ```
+    scp -i "SecondKey.pem" index.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
+    scp -i "SecondKey.pem" styles.css ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
+    scp -i "SecondKey.pem" script.js ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
+    ```
+
+14. Connect to the EC2 instance using ssh:
+
+    ```
+    ssh -i "tu-llave.pem" ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com
+    ```
+
+15. Install Apache and start the service using the following command:
+
+    ```
+    sudo yum install httpd -y
+    sudo systemctl start httpd
+    sudo systemctl enable httpd
+    ```
+    
+16. Move the static files to the folder '/var/www/html' so Apache could load them, in the script.js the url should be using https protocol and the domain given by Duck DNS to the EC2 that hosts the application:
+
+    ```
+    sudo mv index.html /var/www/html
+    sudo mv styles.css /var/www/html
+    sudo mv script.js /var/www/html
+    ```
+
+17. Create a Virtual Host for Apache with these commands:
+
+    ```
+    sudo nano /etc/httpd/conf.d/tu-dominio.conf
+    ```
+
+18. Add this to the file:
+
+    ```
+    <VirtualHost *:443>
+        ServerName taller6arep.duckdns.org
+        ServerAlias www.taller6arep.duckdns.org
+        DocumentRoot /var/www/html
+        Redirect permanent / https://taller6arep.duckdns.org/
+        
+        <Directory /var/www/html>
+            AllowOverride All
+            Require all granted
+        </Directory>
+        
+        RewriteEngine on
+        RewriteCond %{SERVER_NAME} =taller6arep.duckdns.org [OR]
+        RewriteCond %{SERVER_NAME} =www.taller6arep.duckdns.org
+        RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+    </VirtualHost>
+    ```
+
+19. Restart Apache with the command:
+
+    ```
+    sudo systemctl enable httpd
+    ```
+
+## HTTPS Certificates Generation
+
+1. Once 
 
 
 ## Application Running
