@@ -1,0 +1,86 @@
+/* Reinicio básico de márgenes y paddings */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Estilo general del body */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f4f4f4;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Títulos */
+h1 {
+    text-align: center;
+    margin: 20px 0;
+}
+
+/* Contenedores principales */
+.form-container, .property-list {
+    max-width: 600px;       /* Ajusta el ancho máximo según necesites */
+    margin: 20px auto;      /* Centra el contenedor horizontalmente */
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Subtítulos dentro de los contenedores */
+.form-container h2,
+.property-list h2 {
+    margin-bottom: 15px;
+}
+
+/* Etiquetas de formulario */
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+/* Campos de entrada */
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Botón principal */
+.btn {
+    background-color: #4CAF50;
+    color: #fff;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.btn:hover {
+    background-color: #45a049;
+}
+
+/* Estilos para la tabla */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+
+th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+/* Cabecera de la tabla */
+th {
+    background-color: #f0f0f0;
+}
