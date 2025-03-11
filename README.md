@@ -260,6 +260,8 @@ git --version
     scp -i "tu-llave-pem" index.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
     scp -i "tu-llave-pem" styles.css ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
     scp -i "tu-llave-pem" script.js ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
+    scp -i "tu-llave-pem" login.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
+    scp -i "tu-llave-pem" register.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
     ```
 
 5. Connect to the EC2 instance using ssh:
@@ -282,6 +284,8 @@ git --version
     sudo mv index.html /var/www/html
     sudo mv styles.css /var/www/html
     sudo mv script.js /var/www/html
+    sudo mv login.html /var/www/html
+    sudo mv register.html /var/www/html
     ```
 
    ![](src/main/resources/images/apache-files.png)
@@ -336,7 +340,7 @@ git --version
 11. Restart Apache with the command:
 
     ```
-    sudo systemctl enable httpd
+    sudo systemctl restart httpd
     ```
 
     ![](src/main/resources/images/https-apache.png)

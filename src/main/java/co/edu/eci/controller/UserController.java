@@ -20,7 +20,6 @@ public class UserController {
             return ResponseEntity.badRequest().body("Error: El nombre de usuario ya está en uso.");
         }
 
-        // Crea un nuevo usuario
         userService.createUser(user.getUsername(), user.getPassword());
         return ResponseEntity.ok("Usuario registrado exitosamente.");
     }
