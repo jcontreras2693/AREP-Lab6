@@ -84,3 +84,20 @@ th, td {
 th {
     background-color: #f0f0f0;
 }
+
+/* Estilos para mensajes de error */
+#message {
+    color: #ff0000;
+    text-align: center;
+    margin-top: 10px;
+}
+
+/* Estilos para enlaces */
+a {
+    color: #4CAF50;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}

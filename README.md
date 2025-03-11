@@ -24,36 +24,46 @@ This setup ensures scalability, security, and separation of concerns, enabling e
 ## Class Design
 
 ```
-src/
-  main/
-    java/
-      co/
-        edu/
-          eci/
-            controller/
-              PropertyController.java
-            model/
-              Property.java
-            repository/
-              PropertyRepository.java
-            service/
-              PropertyService.java
-            SecureWeb.java                      # Main Class
-    resources/
-        images/                                 # Resources for README file
-        static/                                 # Not used
-        keystore/            
-            keystore.p12
-        application.properties
-  test/
-    java/
-      co/
-        edu/
-          eci/
-            PropertyControllerTest.java         # Unit Test
+src/main/java
+└── co.edu.eci
+    ├── config
+    │   └── SecurityConfig.java
+    ├── controller
+    │   ├── PropertyController.java
+    │   └── UserController.java
+    ├── model
+    │   ├── Property.java
+    │   └── User.java
+    ├── repository
+    │   ├── PropertyRepository.java
+    │   └── UserRepository.java
+    ├── service
+    │   ├── PropertyService.java
+    │   └── UserService.java
+    └── Secureweb.java                      # Main Class
+
+src/main/resources
+    ├── images/                             # Resources for README file
+    ├── static/                             # Not used
+    ├── keystore/            
+    │   └── keystore.p12
+    └── application.properties
+
+src/test/java
+└── co.edu.eci
+    └── PropertyControllerTest.java         # Unit Test
+
 pom.xml
 README.md
 ```
+
+## Secure Login with Hashing
+
+This system safeguards user passwords by utilizing hashing techniques, eliminating the need to store them in plain text. We implement the `BCrypt` algorithm, a robust and widely adopted password hashing function that integrates a salt to defend against rainbow table attacks.
+
+When a user registers or updates their password, the system applies `BCrypt` hashing before saving it in the database. This approach ensures that even if the database is compromised, retrieving or decrypting the actual passwords remains extremely difficult.
+
+During authentication, the entered password is hashed and compared with the stored hash to verify user credentials securely.
 
 ## Getting Started
 
@@ -131,6 +141,16 @@ git --version
     docker exec -it mysql-container mysql -u root -p
     ```
 
+5. Create a new table for the users and passwords:
+
+    ```
+    CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password CHAR(60) NOT NULL
+    );
+    ```
+
 ### EC2 Application Creation
 
 1. Create a new default EC2 instance on AWS and add a new Security Rule on the Security Group of the instance.:
@@ -175,7 +195,7 @@ git --version
     -caname "Let's Encrypt"
     ``` 
 
-7. Download the `keystore.p12` file from your EC2 instance, then put it on the /src/main/resources/keystore directory: 
+7. Download the `keystore.p12` file from your EC2 instance, then put it on the `/src/main/resources/keystore` directory: 
 
     ```
     scp -i "tu-llave.pem" usuario@ip-publica-de-tu-ec2:/ruta/usada/keystore.p12 /ruta/local/destino/
@@ -283,13 +303,19 @@ git --version
         ServerName taller6arep.duckdns.org
         ServerAlias www.taller6arep.duckdns.org
         DocumentRoot /var/www/html
+    
+        # Especifica que login.html sea el archivo predeterminado
+        DirectoryIndex login.html
+    
+        # Redirige HTTP a HTTPS
         Redirect permanent / https://taller6arep.duckdns.org/
-        
+    
         <Directory /var/www/html>
             AllowOverride All
             Require all granted
         </Directory>
-        
+    
+        # Configuración de redirección HTTPS
         RewriteEngine on
         RewriteCond %{SERVER_NAME} =taller6arep.duckdns.org [OR]
         RewriteCond %{SERVER_NAME} =www.taller6arep.duckdns.org

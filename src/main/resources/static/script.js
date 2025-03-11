@@ -1,4 +1,6 @@
-const apiUrl = '/properties';
+const apiUrl = 'https://taller6arep.duckdns.org:5000/properties';
+// URL base para las solicitudes de autenticación
+const authApiUrl = '/auth';
 
 // DOM elements
 const propertyForm = document.getElementById('property-form');
@@ -81,4 +83,71 @@ function deleteProperty(propertyId) {
         .catch(err => console.error('Error deleting property:', err));
 }
 
+// Función para manejar el login
+function handleLogin(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
 
+    fetch(`${authApiUrl}/login`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    })
+    .then(response => {
+        if (response.ok) {
+            window.location.href = 'index.html'; // Redirige a la página principal
+        } else {
+            document.getElementById('message').textContent = 'Credenciales inválidas';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('message').textContent = 'Error al conectar con el servidor';
+    });
+}
+
+// Función para manejar el registro
+function handleRegister(event) {
+    event.preventDefault();
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    fetch(`${authApiUrl}/register`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    })
+    .then(response => {
+        if (response.ok) {
+            document.getElementById('message').textContent = 'Registro exitoso. Redirigiendo...';
+            setTimeout(() => {
+                window.location.href = 'login.html'; // Redirige al login después del registro
+            }, 2000);
+        } else {
+            document.getElementById('message').textContent = 'Error en el registro';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('message').textContent = 'Error al conectar con el servidor';
+    });
+}
+
+// Asignar eventos a los formularios
+document.addEventListener('DOMContentLoaded', function() {
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+});
