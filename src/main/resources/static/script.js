@@ -1,20 +1,27 @@
 const url = 'https://backtaller6arep.duckdns.org:5000';
 const apiUrl = url + '/properties';
-// URL base para las solicitudes de autenticación
 const authApiUrl = url + '/user';
 
-// DOM elements
-const propertyForm = document.getElementById('property-form');
-const propertyTableBody = document.getElementById('property-table').getElementsByTagName('tbody')[0];
+const propertyTable = document.getElementById('property-table');
+if (propertyTable) {
+    const propertyForm = document.getElementById('property-form');
+    const propertyTableBody = document.getElementById('property-table').getElementsByTagName('tbody')[0];
+    let editingPropertyId = null;
 
-let editingPropertyId = null; // Guarda el ID de la propiedad en edición
+    window.onload = fetchProperties;
 
-// Cargar propiedades al iniciar
-window.onload = fetchProperties;
+    function getToken() {
+        return localStorage.getItem('token');
+    }
 
-// Obtener todas las propiedades
-function fetchProperties() {
-    fetch(apiUrl, { credentials: 'include' })
+    function fetchProperties() {
+        const token = getToken();
+
+        fetch(apiUrl, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error fetching properties: ' + response.statusText);
@@ -31,7 +38,7 @@ function fetchProperties() {
                     <td>${property.size}</td>
                     <td>${property.description}</td>
                     <td>
-                        <button class="btn" onclick="editProperty(${property.id})">Edit</button>
+                        <button class="btn" onclick="updateProperty(${property.id})">Edit</button>
                         <button class="btn" onclick="deleteProperty(${property.id})">Delete</button>
                     </td>
                 `;
@@ -40,39 +47,57 @@ function fetchProperties() {
         })
         .catch(err => {
             console.error(err);
-            alert(err.message); // Mostrar mensaje de error al usuario
+            alert(err.message);
         });
-}
+    }
 
-// Enviar formulario (Crear o actualizar propiedad)
-propertyForm.onsubmit = function(event) {
-    event.preventDefault();
+    propertyForm.onsubmit = function(event) {
+        event.preventDefault();
 
-    const propertyData = {
-        address: document.getElementById('address').value,
-        price: document.getElementById('price').value,
-        size: document.getElementById('size').value,
-        description: document.getElementById('description').value
+        const propertyData = {
+            address: document.getElementById('address').value,
+            price: document.getElementById('price').value,
+            size: document.getElementById('size').value,
+            description: document.getElementById('description').value
+        };
+
+        const token = getToken();
+
+        const requestOptions = {
+            method: editingPropertyId ? 'PUT' : 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(propertyData)
+        };
+
+        fetch(editingPropertyId ? `${apiUrl}/${editingPropertyId}` : apiUrl, requestOptions)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error saving property: ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(() => {
+                fetchProperties();
+                propertyForm.reset();
+                editingPropertyId = null;
+            })
+            .catch(err => {
+                console.error(err);
+                alert(err.message);
+            });
     };
 
-    const requestOptions = {
-        method: editingPropertyId ? 'PUT' : 'POST', // Si hay un ID, actualizar con PUT, si no, crear con POST
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(propertyData)
-    };
+    function updateProperty(propertyId) {
+        const token = getToken();
 
-    fetch(editingPropertyId ? `${apiUrl}/${editingPropertyId}` : apiUrl, requestOptions)
-        .then(response => response.json())
-        .then(() => {
-            fetchProperties(); // Refrescar la lista
-            propertyForm.reset(); // Limpiar el formulario
-            editingPropertyId = null; // Resetear el ID después de editar
+        fetch(`${apiUrl}/${propertyId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
         })
-        .catch(err => console.error('Error saving property:', err));
-};
-
-function editProperty(propertyId) {
-    fetch(`${apiUrl}/${propertyId}`, { credentials: 'include' })
         .then(response => {
             if (!response.ok) {
                 throw new Error('Error fetching property for edit: ' + response.statusText);
@@ -84,30 +109,35 @@ function editProperty(propertyId) {
             document.getElementById('price').value = property.price;
             document.getElementById('size').value = property.size;
             document.getElementById('description').value = property.description;
-            editingPropertyId = propertyId; // Guardar el ID para editar
+            editingPropertyId = propertyId;
         })
         .catch(err => {
             console.error(err);
-            alert(err.message); // Mostrar mensaje de error al usuario
+            alert(err.message);
         });
-}
+    }
 
-function deleteProperty(propertyId) {
-    if (confirm('¿Do you want to delete this property?')) {
-        fetch(`${apiUrl}/${propertyId}`, {
-            method: 'DELETE',
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error deleting property: ' + response.statusText);
-            }
-            fetchProperties(); // Refrescar la lista
-        })
-        .catch(err => {
-            console.error(err);
-            alert(err.message); // Mostrar mensaje de error al usuario
-        });
+    function deleteProperty(propertyId) {
+        if (confirm('¿Do you want to delete this property?')) {
+            const token = getToken();
+
+            fetch(`${apiUrl}/${propertyId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error deleting property: ' + response.statusText);
+                }
+                fetchProperties();
+            })
+            .catch(err => {
+                console.error(err);
+                alert(err.message);
+            });
+        }
     }
 }
 
@@ -122,19 +152,17 @@ function handleLogin(event) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-        credentials: 'include' // Incluir credenciales
     })
     .then(response => {
         if (response.ok) {
-            return response.json(); // Parsear la respuesta JSON
+            return response.json();
         } else {
             throw new Error('Invalid Credentials');
         }
     })
     .then(data => {
-        // Guardar datos del usuario en localStorage o sessionStorage si es necesario
-        localStorage.setItem('user', JSON.stringify(data));
-        window.location.href = 'index.html'; // Redirige a la página principal
+        localStorage.setItem('token', data.token);
+        window.location.href = 'home.html';
     })
     .catch(error => {
         console.error('Error:', error);
@@ -158,7 +186,7 @@ function handleRegister(event) {
         if (response.ok) {
             document.getElementById('message').textContent = 'Successful register. Redirecting...';
             setTimeout(() => {
-                window.location.href = 'login.html'; // Redirige al login después del registro
+                window.location.href = 'index.html';
             }, 2000);
         } else {
             throw new Error('Error on register');
@@ -170,7 +198,11 @@ function handleRegister(event) {
     });
 }
 
-// Asignar eventos a los formularios
+function handleLogout() {
+    localStorage.removeItem('token');
+    window.location.href = 'index.html';
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const loginForm = document.getElementById('loginForm');
     const registerForm = document.getElementById('registerForm');

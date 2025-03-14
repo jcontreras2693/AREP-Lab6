@@ -27,6 +27,7 @@ This setup ensures scalability, security, and separation of concerns, enabling e
 src/main/java
 └── co.edu.eci
     ├── config
+    │   ├── JwtAuthenticationFilter.java
     │   └── SecurityConfig.java
     ├── controller
     │   ├── PropertyController.java
@@ -38,20 +39,22 @@ src/main/java
     │   ├── PropertyRepository.java
     │   └── UserRepository.java
     ├── service
+    │   ├── JwtUtil.java
     │   ├── PropertyService.java
     │   └── UserService.java
     └── Secureweb.java                      # Main Class
 
 src/main/resources
     ├── images/                             # Resources for README file
-    ├── static/                             # Not used
+    ├── static/                             # Not used, files for Apache
     ├── keystore/            
     │   └── keystore.p12
     └── application.properties
 
 src/test/java
 └── co.edu.eci
-    └── PropertyControllerTest.java         # Unit Test
+    ├── PropertyControllerTest.java
+    └── PropertyServiceTest.java
 
 pom.xml
 README.md
@@ -254,14 +257,10 @@ git --version
 
    ![](src/main/resources/images/js.png)
 
-4. Load the static files into the EC2 with the command:
+4. Load the static files into the EC2 with this command for each file:
 
     ```
     scp -i "tu-llave-pem" index.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
-    scp -i "tu-llave-pem" styles.css ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
-    scp -i "tu-llave-pem" script.js ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
-    scp -i "tu-llave-pem" login.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
-    scp -i "tu-llave-pem" register.html ec2-user@ec2-44-201-240-221.compute-1.amazonaws.com:/home/ec2-user/
     ```
 
 5. Connect to the EC2 instance using ssh:
@@ -278,14 +277,10 @@ git --version
     sudo systemctl enable httpd
     ```
     
-7. Move the static files to the folder '/var/www/html' so Apache could load them, in the script.js the url should be using https protocol and the domain given by Duck DNS to the EC2 that hosts the application:
+7. Move all the static files to the folder '/var/www/html' so Apache could load them, in the script.js the url should be using https protocol and the domain given by Duck DNS to the EC2 that hosts the application:
 
     ```
     sudo mv index.html /var/www/html
-    sudo mv styles.css /var/www/html
-    sudo mv script.js /var/www/html
-    sudo mv login.html /var/www/html
-    sudo mv register.html /var/www/html
     ```
 
    ![](src/main/resources/images/apache-files.png)
@@ -307,9 +302,6 @@ git --version
         ServerName taller6arep.duckdns.org
         ServerAlias www.taller6arep.duckdns.org
         DocumentRoot /var/www/html
-    
-        # Especifica que login.html sea el archivo predeterminado
-        DirectoryIndex login.html
     
         # Redirige HTTP a HTTPS
         Redirect permanent / https://taller6arep.duckdns.org/
@@ -343,29 +335,22 @@ git --version
     sudo systemctl restart httpd
     ```
 
-    ![](src/main/resources/images/https-apache.png)
+    ![](src/main/resources/images/certificate.png)
 
 ## Application Running
 
-- GET Request example.
+- Register Page.
 
-  ![](src/main/resources/images/get.png)
+  ![](src/main/resources/images/register.png)
 
-- GET Request example by ID.
+- Login Page.
 
-  ![](src/main/resources/images/getid.png)
+  ![](src/main/resources/images/login.png)
 
-- POST Request example.
+- Homepage.
 
-  ![](src/main/resources/images/post.png)
+  ![](src/main/resources/images/homepage.png)
 
-- PUT Request example.
-
-  ![](src/main/resources/images/put.png)
-
-- DELETE Request example.
-
-  ![](src/main/resources/images/delete.png)
 
 ## Running the Tests
 
